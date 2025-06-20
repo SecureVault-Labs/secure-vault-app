@@ -1,29 +1,56 @@
 # .github/workflows/codeql.yml
-name: 'CodeQL'
+# For most projects, this workflow file will not need changing; you simply need
+# to commit it to your repository.
+#
+# You may wish to alter this file to override the set of languages analyzed,
+# or to provide custom queries or build logic.
+#
+# ******** NOTE ********
+# We have attempted to detect the languages in your repository. Please check
+# the `language` matrix defined below to confirm you have the correct set of
+# supported CodeQL languages.
+#
+# CodeQL security analysis for SecureVault
+name: 'CodeQL Security Analysis'
 
 on:
   push:
     branches: ['main']
   pull_request:
     branches: ['main']
-  # weekly Saturday run
   schedule:
-    - cron: '23 12 * * 6'
+    - cron: '25 21 * * 1' # Weekly Monday scan
 
 jobs:
   analyze:
-    name: Analyze
+    name: Analyze JavaScript/TypeScript
     runs-on: ubuntu-latest
     permissions:
       security-events: write
-    strategy:
-      matrix:
-        language: ['javascript-typescript'] # RN/Expo is JS/TS
+      packages: read
+      actions: read
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          languages: ${{ matrix.language }}
-          queries: security-extended # deeper JS/TS queries
-      - uses: github/codeql-action/autobuild@v3
-      - uses: github/codeql-action/analyze@v3
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended,security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
