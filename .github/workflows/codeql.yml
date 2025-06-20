@@ -1,0 +1,29 @@
+# .github/workflows/codeql.yml
+name: 'CodeQL'
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  # weekly Saturday run
+  schedule:
+    - cron: '23 12 * * 6'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    strategy:
+      matrix:
+        language: ['javascript-typescript'] # RN/Expo is JS/TS
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended # deeper JS/TS queries
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3

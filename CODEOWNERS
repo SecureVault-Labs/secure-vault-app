@@ -1,0 +1,51 @@
+# SecureVault Code Owners
+# This file defines who is responsible for reviewing code in specific areas
+
+# Global fallback - require review from maintainers for all changes
+* @thematheusmello
+
+# Security-critical components require security team review
+/utils/SecurityManager.ts @thematheusmello
+/utils/CryptoUtils.ts @thematheusmello
+/utils/AuthenticationManager.ts @thematheusmello
+/utils/TOTPManager.ts @thematheusmello
+
+# Authentication flows require security review
+/app/authenticate.tsx @thematheusmello
+/app/setup.tsx @thematheusmello
+/app/onboarding.tsx @thematheusmello
+
+# Security-sensitive screens
+/app/no-internet-required.tsx @thematheusmello
+
+# Testing requires maintainer review to ensure security coverage
+/__tests__/ @thematheusmello
+/maestro/ @thematheusmello
+/jest-setup*.js @thematheusmello
+
+# Configuration files that affect security
+/app.json @thematheusmello
+/package.json @thematheusmello
+/tsconfig.json @thematheusmello
+/metro.config.js @thematheusmello
+/babel.config.js @thematheusmello
+
+# iOS security configuration
+/ios/SecureVault/SecureVault.entitlements @thematheusmello
+/ios/SecureVault/Info.plist @thematheusmello
+/ios/SecureVault/PrivacyInfo.xcprivacy @thematheusmello
+
+# Documentation changes - still require review for accuracy
+/*.md @thematheusmello
+/docs/ @thematheusmello
+
+# CI/CD and deployment configurations
+/.github/ @thematheusmello
+/scripts/ @thematheusmello
+
+# Security and governance documents require special attention
+/SECURITY.md @thematheusmello
+/CONTRIBUTING.md @thematheusmello
+/CODE_OF_CONDUCT.md @thematheusmello
+/THREAT_MODEL.md @thematheusmello
+/CODEOWNERS @thematheusmello 
