@@ -34,6 +34,7 @@ export class SecurityManager {
   static isAuthenticated: boolean = false;
   static authenticationGracePeriod: number = 5000; // 5 seconds grace period after authentication
   static isInProtectedFlow: boolean = false; // Track if we're in the protected flow
+  static isInNoInternetMode: boolean = false; // Track if we're in no-internet waiting mode
 
   // 1. Initialize security on app start
   static async initializeSecurity(): Promise<boolean> {
@@ -42,9 +43,17 @@ export class SecurityManager {
       if (!__DEV__) {
         const hasNetwork: boolean = await this.checkNetworkConnection();
         if (hasNetwork) {
-          this.forceCloseApp(
-            'Internet connection detected. SecureVault only works offline.'
-          );
+          // Navigate to no-internet screen instead of closing app
+          console.log('🌐 Internet detected, navigating to no-internet screen');
+          this.isInNoInternetMode = true;
+          setTimeout(() => {
+            try {
+              router.dismissAll();
+            } catch (error) {
+              // Ignore dismissAll errors when there's no stack to dismiss
+            }
+            router.replace('/no-internet-required');
+          }, 0);
           return false;
         }
       }
@@ -81,6 +90,28 @@ export class SecurityManager {
     }
   }
 
+  // 2a. Check if it's safe to proceed (no internet detected)
+  static async isSafeToProceed(): Promise<boolean> {
+    try {
+      const hasInternet = await this.checkNetworkConnection();
+      return !hasInternet; // Safe to proceed when there's NO internet
+    } catch (error) {
+      console.error('Failed to check network safety:', error);
+      return false; // Assume unsafe if we can't check
+    }
+  }
+
+  // 2b. Check if currently in no-internet mode
+  static isOnNoInternetScreen(): boolean {
+    return this.isInNoInternetMode;
+  }
+
+  // 2c. Exit no-internet mode (when user successfully gets offline)
+  static exitNoInternetMode(): void {
+    console.log('🌐 Exiting no-internet mode');
+    this.isInNoInternetMode = false;
+  }
+
   // 3. Start continuous network monitoring
   static startNetworkMonitoring(): NetworkUnsubscribe {
     if (this.isNetworkMonitoringActive || __DEV__) return;
@@ -89,6 +120,7 @@ export class SecurityManager {
 
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
       if (state.isConnected && state.isInternetReachable) {
+        // If internet is detected while app is running, navigate to waiting room
         this.handleNetworkDetected();
       }
     });
@@ -103,18 +135,19 @@ export class SecurityManager {
       return;
     }
 
-    Alert.alert(
-      'Security Alert',
-      'Internet connection detected. SecureVault must close for security.',
-      [
-        {
-          text: 'Close App',
-          onPress: () => this.forceCloseApp(),
-          style: 'destructive',
-        },
-      ],
-      { cancelable: false }
+    console.log(
+      '🌐 Network detected during runtime, navigating to no-internet screen'
     );
+    // Navigate to no-internet screen instead of showing destructive alert
+    this.isInNoInternetMode = true;
+    setTimeout(() => {
+      try {
+        router.dismissAll();
+      } catch (error) {
+        // Ignore dismissAll errors when there's no stack to dismiss
+      }
+      router.replace('/no-internet-required');
+    }, 0);
   }
 
   // 5. Force close application
@@ -324,6 +357,15 @@ export class SecurityManager {
   static async handleAppForeground(): Promise<void> {
     console.log('📱 App coming to foreground');
     console.log('🔒 Protected flow status:', this.isInProtectedFlow);
+
+    // Check if we're currently on the no-internet screen
+    const isOnNoInternetScreen = this.isOnNoInternetScreen();
+    if (isOnNoInternetScreen) {
+      console.log(
+        '🌐 Currently on no-internet screen, skipping session checks'
+      );
+      return;
+    }
 
     // Only apply session management if we're in the protected flow
     if (!this.isInProtectedFlow) {

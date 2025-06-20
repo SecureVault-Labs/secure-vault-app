@@ -164,7 +164,7 @@ export default function SetupScreen() {
             '🔐 Manual entry key:',
             result.manualEntryKey ? 'present' : 'missing'
           );
-          console.log('result ->>>>>>>>', result);
+
           Alert.alert(
             '2FA Setup Complete',
             `Please save your recovery codes: ${result.recoveryCodes?.join(

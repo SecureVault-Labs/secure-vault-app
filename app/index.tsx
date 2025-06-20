@@ -17,7 +17,18 @@ export default function Index() {
       // Initialize security first
       const securityInitialized = await SecurityManager.initializeSecurity();
       if (!securityInitialized) {
-        // Security initialization failed, app should close
+        // Security initialization failed
+        // Check if it's because we're in no-internet mode
+        if (SecurityManager.isOnNoInternetScreen()) {
+          // SecurityManager has already handled navigation to no-internet screen
+          // Don't proceed with normal app flow
+          console.log(
+            '🌐 App in no-internet mode, stopping normal navigation flow'
+          );
+          setIsLoading(false);
+          return;
+        }
+        // Some other security failure, app should close
         return;
       }
 
