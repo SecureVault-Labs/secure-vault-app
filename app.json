@@ -8,30 +8,51 @@
     "scheme": "securevault",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "platforms": ["ios", "android"],
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1F3A"
+    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.securevault.app"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0B1F3A"
+      "bundleIdentifier": "com.securevault.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "CFBundleLocalizations": ["en"],
+        "NSCameraUsageDescription": "SecureVault needs camera access to scan QR codes for 2FA setup.",
+        "NSFaceIDUsageDescription": "SecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault."
       }
     },
-    "web": {
-      "bundler": "metro",
-      "output": "single",
-      "favicon": "./assets/images/favicon.png"
+    "android": {
+      "versionCode": 1,
+      "package": "com.securevault.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon/foreground.png",
+        "backgroundImage": "./assets/images/adaptive-icon/background.png"
+      },
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"]
     },
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser",
       "expo-local-authentication",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-screen-capture",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SecureVault needs camera access to scan QR codes for 2FA setup."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      }
     }
   }
 }
