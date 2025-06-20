@@ -140,6 +140,11 @@ export default function SettingsScreen() {
               await SecureStore.deleteItemAsync('biometricEnabled');
               await SecureStore.deleteItemAsync('setupComplete');
               await SecureStore.deleteItemAsync('vaultItems');
+              try {
+                router.dismissAll();
+              } catch (error) {
+                // Ignore dismissAll errors when there's no stack to dismiss
+              }
               router.replace('/splash');
             } catch (error) {
               Alert.alert('Error', 'Failed to reset app');

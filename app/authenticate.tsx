@@ -94,6 +94,14 @@ export default function AuthenticateScreen() {
       // Mark authentication as completed to prevent immediate re-authentication
       SecurityManager.markAuthenticationCompleted();
 
+      // Enter protected flow since user is now authenticated
+      SecurityManager.enterProtectedFlow();
+
+      try {
+        router.dismissAll();
+      } catch (error) {
+        // Ignore dismissAll errors when there's no stack to dismiss
+      }
       router.replace('/(tabs)');
       return true;
     }
@@ -152,21 +160,53 @@ export default function AuthenticateScreen() {
 
       // For 2FA step, validate TOTP/recovery code
       if (authStep === 3) {
+        console.log('🔐 Starting 2FA verification process...');
+        console.log('📊 2FA Input Details:', {
+          useRecoveryCode,
+          recoveryCodeLength: recoveryCode?.length || 0,
+          twoFactorCodeLength: twoFactorCode?.length || 0,
+          recoveryCodeValue: recoveryCode || 'none',
+          twoFactorCodeValue: twoFactorCode || 'none',
+        });
+
         let twoFactorValid = false;
 
         if (useRecoveryCode && recoveryCode) {
+          console.log('🔑 Attempting recovery code verification...');
+          console.log('Recovery code:', recoveryCode);
+
           twoFactorValid = await AuthenticationManager.verifyRecoveryCode(
             recoveryCode,
             password
           );
+
+          console.log('🔑 Recovery code result:', twoFactorValid);
         } else if (!useRecoveryCode && twoFactorCode) {
+          console.log('📱 Attempting TOTP code verification...');
+          console.log('TOTP code:', twoFactorCode);
+          console.log('Password length:', password.length);
+          console.log('Current timestamp:', new Date().toISOString());
+          console.log('Current Unix time:', Math.floor(Date.now() / 1000));
+          console.log(
+            'Current time step (30s):',
+            Math.floor(Date.now() / 1000 / 30)
+          );
+
           twoFactorValid = await AuthenticationManager.verify2FA(
             twoFactorCode,
             password
           );
+
+          console.log('📱 TOTP verification result:', twoFactorValid);
+        } else {
+          console.log('⚠️ No valid 2FA input provided');
+          console.log('useRecoveryCode:', useRecoveryCode);
+          console.log('recoveryCode present:', !!recoveryCode);
+          console.log('twoFactorCode present:', !!twoFactorCode);
         }
 
         if (!twoFactorValid) {
+          console.log('❌ 2FA verification failed');
           setFailedAttempts((prev) => prev + 1);
           Alert.alert('Authentication Failed', 'Invalid 2FA code');
 
@@ -178,7 +218,7 @@ export default function AuthenticateScreen() {
         }
 
         // 2FA successful, mark as completed
-        console.log('✅ 2FA authentication completed');
+        console.log('✅ 2FA authentication completed successfully');
         setCompletedAuth((prev) => {
           const newState = { ...prev, twoFactor: true };
           console.log('🔄 Updated completedAuth state:', newState);
@@ -480,6 +520,11 @@ export default function AuthenticateScreen() {
       return render2FAStep();
     } else {
       // No authentication required, go to main app
+      try {
+        router.dismissAll();
+      } catch (error) {
+        // Ignore dismissAll errors when there's no stack to dismiss
+      }
       router.replace('/(tabs)');
       return null;
     }

@@ -164,7 +164,7 @@ export default function SetupScreen() {
             '🔐 Manual entry key:',
             result.manualEntryKey ? 'present' : 'missing'
           );
-
+          console.log('result ->>>>>>>>', result);
           Alert.alert(
             '2FA Setup Complete',
             `Please save your recovery codes: ${result.recoveryCodes?.join(
@@ -177,6 +177,11 @@ export default function SetupScreen() {
                   console.log(
                     '🔄 Navigating to authenticate screen (with 2FA)...'
                   );
+                  try {
+                    router.dismissAll();
+                  } catch (error) {
+                    // Ignore dismissAll errors when there's no stack to dismiss
+                  }
                   router.replace('/authenticate');
                 },
               },
@@ -184,6 +189,11 @@ export default function SetupScreen() {
           );
         } else {
           console.log('🔄 Navigating to authenticate screen (without 2FA)...');
+          try {
+            router.dismissAll();
+          } catch (error) {
+            // Ignore dismissAll errors when there's no stack to dismiss
+          }
           router.replace('/authenticate');
         }
         console.log('🎉 Setup process completed successfully!');

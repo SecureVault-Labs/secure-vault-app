@@ -33,6 +33,7 @@ export class SecurityManager {
   static isAppInBackground: boolean = false;
   static isAuthenticated: boolean = false;
   static authenticationGracePeriod: number = 5000; // 5 seconds grace period after authentication
+  static isInProtectedFlow: boolean = false; // Track if we're in the protected flow
 
   // 1. Initialize security on app start
   static async initializeSecurity(): Promise<boolean> {
@@ -215,6 +216,11 @@ export class SecurityManager {
 
   // 10. Reset session timer
   static resetSessionTimer(): void {
+    // Only manage session timer if in protected flow
+    if (!this.isInProtectedFlow) {
+      return;
+    }
+
     if (this.sessionTimer) {
       clearTimeout(this.sessionTimer);
     }
@@ -262,6 +268,7 @@ export class SecurityManager {
   static markAuthenticationCompleted(): void {
     console.log('🔐 Authentication completed, setting grace period');
     this.isAuthenticated = true;
+    this.isInProtectedFlow = true; // Now we're in the protected flow
     this.lastActivity = Date.now();
     this.resetSessionTimer();
 
@@ -270,6 +277,25 @@ export class SecurityManager {
       console.log('⏰ Authentication grace period ended');
       this.isAuthenticated = false;
     }, this.authenticationGracePeriod);
+  }
+
+  // 12b. Enter protected flow (when user successfully completes setup/authentication)
+  static enterProtectedFlow(): void {
+    console.log('🔒 Entering protected flow - session management now active');
+    this.isInProtectedFlow = true;
+    this.lastActivity = Date.now();
+    this.resetSessionTimer();
+  }
+
+  // 12c. Exit protected flow (during logout or reset)
+  static exitProtectedFlow(): void {
+    console.log('🔓 Exiting protected flow - session management disabled');
+    this.isInProtectedFlow = false;
+    this.isAuthenticated = false;
+    if (this.sessionTimer) {
+      clearTimeout(this.sessionTimer);
+      this.sessionTimer = null;
+    }
   }
 
   // 13. Setup app state monitoring
@@ -297,6 +323,13 @@ export class SecurityManager {
   // 15. Handle app coming to foreground
   static async handleAppForeground(): Promise<void> {
     console.log('📱 App coming to foreground');
+    console.log('🔒 Protected flow status:', this.isInProtectedFlow);
+
+    // Only apply session management if we're in the protected flow
+    if (!this.isInProtectedFlow) {
+      console.log('✅ Not in protected flow, skipping session checks');
+      return;
+    }
 
     // If we just completed authentication, don't require it again
     if (this.isAuthenticated) {
@@ -340,6 +373,11 @@ export class SecurityManager {
         );
         // Navigate to authentication screen after render phase
         setTimeout(() => {
+          try {
+            router.dismissAll();
+          } catch (error) {
+            // Ignore dismissAll errors when there's no stack to dismiss
+          }
           router.replace('/authenticate');
         }, 0);
       } else {
@@ -390,8 +428,16 @@ export class SecurityManager {
       // Clear session state
       await SecureStore.deleteItemAsync('currentSession');
 
+      // Exit protected flow
+      this.exitProtectedFlow();
+
       // Navigate to initial screen after render phase
       setTimeout(() => {
+        try {
+          router.dismissAll();
+        } catch (error) {
+          // Ignore dismissAll errors when there's no stack to dismiss
+        }
         router.replace('/');
       }, 0);
     } catch (error) {
@@ -486,6 +532,11 @@ export class SecurityManager {
             onPress: () => {
               // Delay navigation to avoid setState during render
               setTimeout(() => {
+                try {
+                  router.dismissAll();
+                } catch (error) {
+                  // Ignore dismissAll errors when there's no stack to dismiss
+                }
                 router.replace('/');
               }, 0);
             },

@@ -28,8 +28,36 @@ export class TOTPManager {
 
     let result = '';
     for (let i = 0; i < length; i++) {
-      result += chars[randomBytes[i] % chars.length];
+      const randomIndex = randomBytes[i] % chars.length;
+      const selectedChar = chars[randomIndex];
+      result += selectedChar;
     }
+
+    // Additional validation to ensure no invalid characters
+    const base32Regex = /^[A-Z2-7]+$/;
+    if (!base32Regex.test(result)) {
+      console.error('❌ Generated invalid TOTP secret:', result);
+      console.error('Invalid characters found. Regenerating...');
+      // Recursively regenerate if invalid (should never happen with correct implementation)
+      return this.generateSecret(length);
+    }
+
+    // Additional check for common problematic characters
+    if (
+      result.includes('0') ||
+      result.includes('1') ||
+      result.includes('8') ||
+      result.includes('9')
+    ) {
+      console.error(
+        '❌ Generated TOTP secret contains invalid characters:',
+        result
+      );
+      console.error('Regenerating secret...');
+      return this.generateSecret(length);
+    }
+
+    console.log('✅ Generated valid TOTP secret of length:', result.length);
     return result;
   }
 
@@ -66,7 +94,8 @@ export class TOTPManager {
       algorithm: config?.algorithm || this.DEFAULT_ALGORITHM,
     };
 
-    const currentTimeStep = Math.floor(Date.now() / 1000 / fullConfig.period);
+    const currentTime = Math.floor(Date.now() / 1000);
+    const currentTimeStep = Math.floor(currentTime / fullConfig.period);
 
     // Check current time step and adjacent ones for clock drift tolerance
     for (let i = -this.WINDOW_SIZE; i <= this.WINDOW_SIZE; i++) {
@@ -75,7 +104,6 @@ export class TOTPManager {
         fullConfig,
         timeStep
       );
-
       if (this.constantTimeCompare(token, expectedToken)) {
         return { valid: true, timeStep };
       }
@@ -107,7 +135,7 @@ export class TOTPManager {
   }
 
   /**
-   * Generate TOTP for a specific time step
+   * Generate TOTP for a specific time step (RFC 6238 compliant)
    */
   private static async generateTOTPForTimeStep(
     config: TOTPConfig,
@@ -116,51 +144,60 @@ export class TOTPManager {
     // Convert secret from Base32 to bytes
     const secretBytes = this.base32Decode(config.secret);
 
-    // Convert time step to 8-byte big-endian
-    const timeBuffer = new ArrayBuffer(8);
-    const timeView = new DataView(timeBuffer);
-    timeView.setUint32(4, timeStep, false); // Big-endian, high 32 bits are 0
+    // Create 8-byte big-endian time counter (RFC 6238)
+    const timeBuffer = new Uint8Array(8);
+    // JavaScript bitwise operations work on 32-bit signed integers
+    // For time steps > 2^32, we need to handle high and low parts separately
+    const high = Math.floor(timeStep / 0x100000000);
+    const low = timeStep & 0xffffffff;
 
-    // Generate HMAC
-    const hmac = await this.hmac(
-      secretBytes,
-      new Uint8Array(timeBuffer),
-      config.algorithm
-    );
+    // Big-endian encoding
+    timeBuffer[0] = (high >>> 24) & 0xff;
+    timeBuffer[1] = (high >>> 16) & 0xff;
+    timeBuffer[2] = (high >>> 8) & 0xff;
+    timeBuffer[3] = high & 0xff;
+    timeBuffer[4] = (low >>> 24) & 0xff;
+    timeBuffer[5] = (low >>> 16) & 0xff;
+    timeBuffer[6] = (low >>> 8) & 0xff;
+    timeBuffer[7] = low & 0xff;
 
-    // Dynamic truncation (RFC 4226)
+    // Generate HMAC-SHA1 (RFC 6238 uses SHA1 by default)
+    const hmac = await this.hmac(secretBytes, timeBuffer, config.algorithm);
+
+    // Dynamic truncation (RFC 4226 Section 5.3)
     const offset = hmac[hmac.length - 1] & 0x0f;
-    const code =
-      (((hmac[offset] & 0x7f) << 24) |
-        ((hmac[offset + 1] & 0xff) << 16) |
-        ((hmac[offset + 2] & 0xff) << 8) |
-        (hmac[offset + 3] & 0xff)) %
-      Math.pow(10, config.digits);
+    const binaryCode =
+      ((hmac[offset] & 0x7f) << 24) |
+      ((hmac[offset + 1] & 0xff) << 16) |
+      ((hmac[offset + 2] & 0xff) << 8) |
+      (hmac[offset + 3] & 0xff);
+
+    // Generate the final TOTP value
+    const code = binaryCode % Math.pow(10, config.digits);
 
     return code.toString().padStart(config.digits, '0');
   }
 
   /**
-   * HMAC implementation using expo-crypto
+   * RFC 6238 compliant HMAC-SHA1 implementation
+   * Follows RFC 2104 specification exactly
    */
   private static async hmac(
     key: Uint8Array,
     data: Uint8Array,
     algorithm: string
   ): Promise<Uint8Array> {
-    // For simplicity, we'll use a basic HMAC implementation
-    // In production, you might want to use a more robust implementation
+    const blockSize = algorithm === 'SHA1' ? 64 : 64; // SHA-1 block size is 64 bytes
+    let keyBytes: Uint8Array;
 
-    const blockSize = 64; // SHA-1 and SHA-256 block size
-    let keyBytes = key;
-
-    // If key is longer than block size, hash it
-    if (keyBytes.length > blockSize) {
-      const hashedKey = await this.hash(keyBytes, algorithm);
-      keyBytes = hashedKey;
+    // If key is longer than block size, hash it first
+    if (key.length > blockSize) {
+      keyBytes = await this.hash(key, algorithm);
+    } else {
+      keyBytes = new Uint8Array(key);
     }
 
-    // Pad key to block size
+    // Pad key to block size with zeros
     const paddedKey = new Uint8Array(blockSize);
     paddedKey.set(keyBytes);
 
@@ -169,26 +206,48 @@ export class TOTPManager {
     const outerPad = new Uint8Array(blockSize);
 
     for (let i = 0; i < blockSize; i++) {
-      innerPad[i] = paddedKey[i] ^ 0x36;
-      outerPad[i] = paddedKey[i] ^ 0x5c;
+      innerPad[i] = paddedKey[i] ^ 0x36; // ipad
+      outerPad[i] = paddedKey[i] ^ 0x5c; // opad
     }
 
-    // Inner hash: hash(innerPad + data)
+    // Inner hash: H(K ⊕ ipad || message)
     const innerData = new Uint8Array(innerPad.length + data.length);
-    innerData.set(innerPad);
+    innerData.set(innerPad, 0);
     innerData.set(data, innerPad.length);
     const innerHash = await this.hash(innerData, algorithm);
 
-    // Outer hash: hash(outerPad + innerHash)
+    // Outer hash: H(K ⊕ opad || H(K ⊕ ipad || message))
     const outerData = new Uint8Array(outerPad.length + innerHash.length);
-    outerData.set(outerPad);
+    outerData.set(outerPad, 0);
     outerData.set(innerHash, outerPad.length);
 
-    return this.hash(outerData, algorithm);
+    return await this.hash(outerData, algorithm);
   }
 
   /**
-   * Hash function using expo-crypto
+   * Convert Uint8Array to Base64 string
+   */
+  private static uint8ArrayToBase64(data: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < data.length; i++) {
+      binary += String.fromCharCode(data[i]);
+    }
+    return btoa(binary);
+  }
+
+  /**
+   * Convert hex string to Uint8Array
+   */
+  private static hexToUint8Array(hex: string): Uint8Array {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    }
+    return bytes;
+  }
+
+  /**
+   * Hash function using expo-crypto - properly handles binary data
    */
   private static async hash(
     data: Uint8Array,
@@ -210,24 +269,11 @@ export class TOTPManager {
         throw new Error(`Unsupported algorithm: ${algorithm}`);
     }
 
-    // Convert Uint8Array to string for expo-crypto
-    const dataString = Array.from(data)
-      .map((b) => String.fromCharCode(b))
-      .join('');
+    // Use Crypto.digest for binary data (not digestStringAsync)
+    const hashBuffer = await Crypto.digest(cryptoAlgorithm, data as any);
 
-    const hashHex = await Crypto.digestStringAsync(
-      cryptoAlgorithm,
-      dataString,
-      { encoding: Crypto.CryptoEncoding.HEX }
-    );
-
-    // Convert hex string back to Uint8Array
-    const hashBytes = new Uint8Array(hashHex.length / 2);
-    for (let i = 0; i < hashHex.length; i += 2) {
-      hashBytes[i / 2] = parseInt(hashHex.substr(i, 2), 16);
-    }
-
-    return hashBytes;
+    // Convert ArrayBuffer to Uint8Array
+    return new Uint8Array(hashBuffer);
   }
 
   /**
