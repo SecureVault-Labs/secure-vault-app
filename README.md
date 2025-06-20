@@ -376,7 +376,7 @@ graph TB
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/secure-vault.git
+git clone https://github.com/SecureVault-Labs/secure-vault-app.git
 cd secure-vault
 
 # Install dependencies
@@ -618,8 +618,8 @@ We'll respond within 24 hours and work with you to address the issue responsibly
 - **Website**: [getsecurevault.com](https://getsecurevault.com)
 - **Security Issues**: matheus@getsecurevault.com
 - **General Support**: matheus@getsecurevault.com
-- **GitHub Issues**: [Open an issue](https://github.com/your-username/secure-vault/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/secure-vault/discussions)
+- **GitHub Issues**: [Open an issue](https://github.com/SecureVault-Labs/secure-vault-app/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/SecureVault-Labs/secure-vault-app/discussions)
 
 ## 📜 License
 
