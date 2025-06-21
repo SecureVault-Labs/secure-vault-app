@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "SecureVault",
+    "name": "GetSecureVault",
     "slug": "secure-vault",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,17 +16,37 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.securevault.app",
+      "bundleIdentifier": "com.securevault.opensource",
       "buildNumber": "1",
       "infoPlist": {
         "CFBundleLocalizations": ["en"],
-        "NSCameraUsageDescription": "SecureVault needs camera access to scan QR codes for 2FA setup.",
-        "NSFaceIDUsageDescription": "SecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault."
+        "NSCameraUsageDescription": "GetSecureVault needs camera access to scan QR codes for 2FA setup.",
+        "NSFaceIDUsageDescription": "GetSecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSSupportsLiveActivities": false,
+        "UIBackgroundModes": [],
+        "CFBundleDisplayName": "GetSecureVault",
+        "CFBundleShortVersionString": "1.0.0"
+      },
+      "entitlements": {
+        "com.apple.developer.networking.wifi-info": false,
+        "com.apple.developer.networking.networkextension": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyTracking": false
       }
     },
     "android": {
       "versionCode": 1,
-      "package": "com.securevault.app",
+      "package": "com.securevault.opensource",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon/foreground.png",
         "backgroundImage": "./assets/images/adaptive-icon/background.png"
@@ -45,7 +65,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "SecureVault needs camera access to scan QR codes for 2FA setup."
+          "cameraPermission": "GetSecureVault needs camera access to scan QR codes for 2FA setup."
         }
       ]
     ],

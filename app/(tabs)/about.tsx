@@ -13,11 +13,11 @@ export default function AboutScreen() {
   const insets = useSafeAreaInsets();
 
   const openGithub = () => {
-    Linking.openURL('https://github.com/securevault/app');
+    Linking.openURL('https://github.com/SecureVault-Labs/secure-vault-app');
   };
 
   const openWebsite = () => {
-    Linking.openURL('https://securevault.app');
+    Linking.openURL('https://getsecurevault.com');
   };
 
   return (
@@ -108,7 +108,7 @@ export default function AboutScreen() {
             <Text style={styles.madeWithText}>for the crypto community</Text>
           </View>
           <Text style={styles.copyright}>
-            © 2024 SecureVault. Open source software.
+            © 2025 SecureVault. Open source software.
           </Text>
         </View>
       </ScrollView>

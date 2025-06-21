@@ -1,8 +1,8 @@
-# SecureVault 🛡️
+# GetSecureVault 🛡️
 
 **An Open-Source Military-Grade Offline Cryptocurrency Security Vault**
 
-SecureVault is a 100% offline mobile application designed to securely store cryptocurrency seed phrases, wallet addresses, and private keys. Built with React Native and Expo, it prioritizes security through offline-only operation, multi-layer authentication, and military-grade encryption.
+GetSecureVault is a 100% offline mobile application designed to securely store cryptocurrency seed phrases, wallet addresses, and private keys. Built with React Native and Expo, it prioritizes security through offline-only operation, multi-layer authentication, and military-grade encryption.
 
 > **🌟 Open Source & Community Driven**: This project is fully open-source and welcomes contributions from security researchers, developers, and cryptocurrency enthusiasts. Together, we can build the most secure offline vault possible.
 
@@ -677,8 +677,6 @@ By combining:
 - **Military-grade encryption** (AES-256 equivalent)
 - **Open-source transparency** (auditable by security researchers)
 - **Comprehensive testing** (60+ tests validating security)
-
-We've created a digital vault that answers the fundamental question: **Yes, it is possible to have a digital system that is as secure as the safest offline methods while being more accessible and user-friendly.**
 
 **🌟 Your seed phrases and private keys deserve the highest level of security. SecureVault delivers it.**
 

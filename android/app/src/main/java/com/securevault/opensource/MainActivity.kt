@@ -1,4 +1,4 @@
-package com.securevault.app
+package com.securevault.opensource
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
