@@ -31,14 +31,17 @@
         "foregroundImage": "./assets/images/adaptive-icon/foreground.png",
         "backgroundImage": "./assets/images/adaptive-icon/background.png"
       },
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"]
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"],
+      "allowBackup": false,
+      "networkSecurityConfig": {
+        "cleartextTrafficPermitted": false
+      }
     },
     "plugins": [
       "expo-router",
       "expo-font",
       "expo-local-authentication",
       "expo-secure-store",
-      "expo-screen-capture",
       [
         "expo-camera",
         {

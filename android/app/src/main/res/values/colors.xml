@@ -1,0 +1,15 @@
+<resources>
+  <color name="splashscreen_background">#0B1F3A</color>
+  <color name="iconBackground">#ffffff</color>
+  <color name="colorPrimary">#023c69</color>
+  <color name="colorPrimaryDark">#0B1F3A</color>
+  <color name="colorAccent">#4ecdc4</color>
+  <color name="colorSecondary">#4ecdc4</color>
+  <color name="colorSurface">#ffffff</color>
+  <color name="colorOnSurface">#000000</color>
+  <color name="colorBackground">#ffffff</color>
+  <color name="colorOnBackground">#000000</color>
+  <color name="colorError">#B00020</color>
+  <color name="statusBarColor">#0B1F3A</color>
+  <color name="navigationBarColor">#0B1F3A</color>
+</resources>
