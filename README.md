@@ -377,7 +377,7 @@ graph TB
 ```bash
 # Clone the repository
 git clone https://github.com/SecureVault-Labs/secure-vault-app.git
-cd secure-vault
+cd secure-vault-app
 
 # Install dependencies
 npm install
@@ -412,11 +412,18 @@ maestro test maestro/flows/
 ### Build for Production
 
 ```bash
-# Web build
-npm run build:web
-
 # Native builds require EAS Build
-# See Expo documentation for native builds
+# Install EAS CLI
+npm install -g @expo/eas-cli
+
+# Configure EAS
+eas build:configure
+
+# Build for iOS
+eas build --platform ios
+
+# Build for Android
+eas build --platform android
 ```
 
 ## 🔐 Security Implementation
