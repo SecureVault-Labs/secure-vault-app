@@ -8,10 +8,7 @@
     "scheme": "securevault",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -22,9 +19,7 @@
       "bundleIdentifier": "com.securevault.opensource",
       "buildNumber": "1",
       "infoPlist": {
-        "CFBundleLocalizations": [
-          "en"
-        ],
+        "CFBundleLocalizations": ["en"],
         "NSCameraUsageDescription": "GetSecureVault needs camera access to scan QR codes for 2FA setup.",
         "NSFaceIDUsageDescription": "GetSecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault.",
         "ITSAppUsesNonExemptEncryption": false,
@@ -33,17 +28,11 @@
         "CFBundleDisplayName": "GetSecureVault",
         "CFBundleShortVersionString": "1.0.0"
       },
-      "entitlements": {
-        "com.apple.developer.networking.wifi-info": false,
-        "com.apple.developer.networking.networkextension": false
-      },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": [
-              "CA92.1"
-            ]
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
           }
         ],
         "NSPrivacyCollectedDataTypes": [],
@@ -58,15 +47,7 @@
         "foregroundImage": "./assets/images/adaptive-icon/foreground.png",
         "backgroundImage": "./assets/images/adaptive-icon/background.png"
       },
-      "permissions": [
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT",
-        "CAMERA",
-        "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"],
       "allowBackup": false,
       "networkSecurityConfig": {
         "cleartextTrafficPermitted": false
@@ -94,6 +75,10 @@
       "eas": {
         "projectId": "4f4101aa-36bb-4c2a-9d58-a10771efa243"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/4f4101aa-36bb-4c2a-9d58-a10771efa243"
     }
   }
 }
