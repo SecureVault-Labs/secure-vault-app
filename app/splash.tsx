@@ -1,24 +1,15 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
 import { Shield } from 'lucide-react-native';
 
 export default function SplashScreen() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace('/onboarding');
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Splash screen now only displays content
+  // Navigation is handled by the main app index.tsx
 
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <Shield size={80} color="#FFFFFF" strokeWidth={1.5} />
-        <Text style={styles.appName}>SecureVault</Text>
+        <Text style={styles.appName}>GetSecureVault</Text>
         <Text style={styles.tagline}>Offline Crypto Security</Text>
       </View>
     </View>

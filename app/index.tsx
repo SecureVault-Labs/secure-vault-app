@@ -7,28 +7,59 @@ import SecurityManager from '../utils/SecurityManager';
 export default function Index() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasInternetConnection, setHasInternetConnection] = useState<
+    boolean | null
+  >(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    checkAppState();
-  }, []);
+    // Only initialize once per app session
+    if (!hasInitialized) {
+      setHasInitialized(true);
+      checkInternetFirst();
+    }
+  }, [hasInitialized]);
 
-  const checkAppState = async () => {
+  const checkInternetFirst = async () => {
     try {
-      // Initialize security first
-      const securityInitialized = await SecurityManager.initializeSecurity();
+      // FIRST: Check for internet connection immediately
+      console.log('🔍 Checking internet connection on app startup...');
+      const hasInternet = await SecurityManager.checkNetworkConnection();
+
+      if (hasInternet && !__DEV__) {
+        // Internet detected - navigate immediately to no-internet screen
+        console.log('🌐 Internet detected on startup, showing blocker screen');
+        setHasInternetConnection(true);
+        SecurityManager.setInNoInternetMode(true);
+
+        // Navigate to no-internet screen immediately without any delay
+        router.replace('/no-internet-required');
+        setIsLoading(false);
+        return;
+      }
+
+      // No internet detected or in dev mode - proceed with normal app initialization
+      console.log(
+        '✅ No internet detected on startup, proceeding with app initialization'
+      );
+      setHasInternetConnection(false);
+      await initializeApp();
+    } catch (error) {
+      console.error('Error during initial internet check:', error);
+      // If we can't check internet, assume it's present for security
+      setHasInternetConnection(true);
+      router.replace('/no-internet-required');
+      setIsLoading(false);
+    }
+  };
+
+  const initializeApp = async () => {
+    try {
+      // Initialize security (but skip internet check since we already did it)
+      const securityInitialized =
+        await SecurityManager.initializeSecurityWithoutInternetCheck();
       if (!securityInitialized) {
-        // Security initialization failed
-        // Check if it's because we're in no-internet mode
-        if (SecurityManager.isOnNoInternetScreen()) {
-          // SecurityManager has already handled navigation to no-internet screen
-          // Don't proceed with normal app flow
-          console.log(
-            '🌐 App in no-internet mode, stopping normal navigation flow'
-          );
-          setIsLoading(false);
-          return;
-        }
-        // Some other security failure, app should close
+        console.error('Security initialization failed');
         return;
       }
 
@@ -44,29 +75,40 @@ export default function Index() {
 
       // Show splash for 3 seconds, then navigate based on app state
       setTimeout(() => {
-        if (!hasCompletedOnboarding) {
-          router.replace('/onboarding');
-        } else if (!hasSetupPassword) {
-          router.replace('/setup');
-        } else {
-          // User is set up, ALWAYS require authentication on app launch
-          router.replace('/authenticate');
+        // Double-check we're still in offline mode before navigating
+        // This prevents navigation if user is on no-internet screen
+        if (!SecurityManager.isOnNoInternetScreen()) {
+          if (!hasCompletedOnboarding) {
+            router.replace('/onboarding');
+          } else if (!hasSetupPassword) {
+            router.replace('/setup');
+          } else {
+            // User is set up, ALWAYS require authentication on app launch
+            router.replace('/authenticate');
+          }
         }
         setIsLoading(false);
       }, 3000);
     } catch (error) {
-      console.error('Error checking app state:', error);
+      console.error('Error during app initialization:', error);
       // Default to onboarding if there's an error
       setTimeout(() => {
-        router.replace('/onboarding');
+        // Only navigate if not on no-internet screen
+        if (!SecurityManager.isOnNoInternetScreen()) {
+          router.replace('/onboarding');
+        }
         setIsLoading(false);
       }, 3000);
     }
   };
 
-  if (isLoading) {
+  // Only show splash screen if we're still loading and no internet was detected
+  if (isLoading && hasInternetConnection !== true) {
     return <SplashScreen />;
   }
 
+  // If internet was detected, the navigation to no-internet screen has already happened
+  // If loading is complete, return null (router will handle navigation)
+  // This prevents the main index from interfering with navigation from other screens
   return null;
 }
