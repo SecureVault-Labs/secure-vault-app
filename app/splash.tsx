@@ -28,14 +28,14 @@ const styles = StyleSheet.create({
   },
   appName: {
     fontSize: 32,
-    fontFamily: 'Inter-Bold',
+    fontWeight: 'bold',
     color: '#FFFFFF',
     marginTop: 24,
     letterSpacing: -0.5,
   },
   tagline: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
+    fontWeight: 'normal',
     color: '#FFFFFF',
     opacity: 0.8,
     marginTop: 8,

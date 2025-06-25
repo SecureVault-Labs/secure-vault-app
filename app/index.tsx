@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import SplashScreen from './splash';
 import SecurityManager from '../utils/SecurityManager';
@@ -12,11 +13,43 @@ export default function Index() {
   >(null);
   const [hasInitialized, setHasInitialized] = useState(false);
 
+  const fallbackNavigation = async () => {
+    try {
+      const hasCompletedOnboarding = await SecureStore.getItemAsync(
+        'hasCompletedOnboarding'
+      );
+      const hasSetupPassword = await SecureStore.getItemAsync(
+        'hasSetupPassword'
+      );
+
+      if (!hasCompletedOnboarding) {
+        router.replace('/onboarding');
+      } else if (!hasSetupPassword) {
+        router.replace('/setup');
+      } else {
+        router.replace('/authenticate');
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Fallback navigation error:', error);
+      router.replace('/onboarding');
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Only initialize once per app session
     if (!hasInitialized) {
       setHasInitialized(true);
-      checkInternetFirst();
+      // Add timeout fallback for iPad/device-specific issues
+      const initTimeout = setTimeout(() => {
+        console.warn('Initialization timeout, forcing navigation');
+        fallbackNavigation();
+      }, 10000); // 10 second fallback
+
+      checkInternetFirst().finally(() => {
+        clearTimeout(initTimeout);
+      });
     }
   }, [hasInitialized]);
 
@@ -24,6 +57,16 @@ export default function Index() {
     try {
       // FIRST: Check for internet connection immediately
       console.log('🔍 Checking internet connection on app startup...');
+
+      // Add platform-specific handling
+      if (Platform.OS === 'ios' && Platform.isPad) {
+        console.log('📱 Detected iPad, using simplified initialization');
+      } else if (Platform.OS === 'android') {
+        console.log(
+          '🤖 Detected Android device, using standard initialization'
+        );
+      }
+
       const hasInternet = await SecurityManager.checkNetworkConnection();
 
       if (hasInternet && !__DEV__) {
@@ -46,10 +89,25 @@ export default function Index() {
       await initializeApp();
     } catch (error) {
       console.error('Error during initial internet check:', error);
-      // If we can't check internet, assume it's present for security
-      setHasInternetConnection(true);
-      router.replace('/no-internet-required');
-      setIsLoading(false);
+      // Platform-specific error handling
+      if (Platform.OS === 'ios' && Platform.isPad) {
+        console.log(
+          '📱 iPad error fallback, proceeding with offline initialization'
+        );
+        setHasInternetConnection(false);
+        await initializeApp();
+      } else if (Platform.OS === 'android') {
+        console.log(
+          '🤖 Android error fallback, proceeding with offline initialization'
+        );
+        setHasInternetConnection(false);
+        await initializeApp();
+      } else {
+        // If we can't check internet, assume it's present for security
+        setHasInternetConnection(true);
+        router.replace('/no-internet-required');
+        setIsLoading(false);
+      }
     }
   };
 
