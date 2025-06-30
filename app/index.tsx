@@ -89,25 +89,13 @@ export default function Index() {
       await initializeApp();
     } catch (error) {
       console.error('Error during initial internet check:', error);
-      // Platform-specific error handling
-      if (Platform.OS === 'ios' && Platform.isPad) {
-        console.log(
-          '📱 iPad error fallback, proceeding with offline initialization'
-        );
-        setHasInternetConnection(false);
-        await initializeApp();
-      } else if (Platform.OS === 'android') {
-        console.log(
-          '🤖 Android error fallback, proceeding with offline initialization'
-        );
-        setHasInternetConnection(false);
-        await initializeApp();
-      } else {
-        // If we can't check internet, assume it's present for security
-        setHasInternetConnection(true);
-        router.replace('/no-internet-required');
-        setIsLoading(false);
-      }
+      // For offline-first app, default to proceeding (assume no internet)
+      // This ensures the app works even if network detection fails
+      console.log(
+        '🔄 Network check failed, defaulting to offline mode for safety'
+      );
+      setHasInternetConnection(false);
+      await initializeApp();
     }
   };
 

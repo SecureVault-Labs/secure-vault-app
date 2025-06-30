@@ -2,8 +2,8 @@
   "expo": {
     "name": "GetSecureVault",
     "slug": "secure-vault",
-    "version": "1.0.0",
-    "orientation": "portrait",
+    "version": "1.0.1",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "securevault",
     "userInterfaceStyle": "automatic",
@@ -15,9 +15,9 @@
       "backgroundColor": "#0B1F3A"
     },
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.securevault.opensource",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "CFBundleLocalizations": ["en"],
         "NSCameraUsageDescription": "GetSecureVault needs camera access to scan QR codes for 2FA setup.",
@@ -26,7 +26,7 @@
         "NSSupportsLiveActivities": false,
         "UIBackgroundModes": [],
         "CFBundleDisplayName": "GetSecureVault",
-        "CFBundleShortVersionString": "1.0.0"
+        "CFBundleShortVersionString": "1.0.1"
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
@@ -41,7 +41,7 @@
       }
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "package": "com.securevault.opensource",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon/foreground.png",

@@ -81,8 +81,11 @@ export class SecurityManager {
   static async checkNetworkConnection(): Promise<boolean> {
     try {
       const netInfo: NetInfoState = await NetInfo.fetch();
-      const hasInternet =
-        netInfo.isConnected === true && netInfo.isInternetReachable === true;
+
+      // More robust checking - if any value is null/undefined, treat as no internet
+      const isConnected = netInfo.isConnected === true;
+      const isInternetReachable = netInfo.isInternetReachable === true;
+      const hasInternet = isConnected && isInternetReachable;
 
       console.log('🔍 Network check details:');
       console.log('  - isConnected:', netInfo.isConnected);
@@ -92,9 +95,13 @@ export class SecurityManager {
 
       return hasInternet;
     } catch (error) {
-      console.error('🔍 Network check failed:', error);
-      // If we can't check, assume there's internet for safety
-      return true;
+      console.error('🔍 Network check failed (likely WiFi off):', error);
+      // If network check fails (e.g., WiFi off), assume NO internet (safe to proceed)
+      // This is the correct behavior for an offline-first app
+      console.log(
+        '🔍 Network check error - assuming offline mode (no internet)'
+      );
+      return false;
     }
   }
 
