@@ -3,6 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
+  "author": "GetSecureVault Team",
+  "license": "GPL-3.0",
+  "homepage": "https://getsecurevault.com",
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 npx expo start",
     "lint": "expo lint",
@@ -10,7 +13,14 @@
     "ios": "expo run:ios",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "setup-env": "cp .env.example .env && echo 'Please edit .env with your actual values'",
+    "build:ios": "eas build --platform ios --profile production-store",
+    "build:android": "eas build --platform android --profile production",
+    "submit:ios": "eas submit --platform ios --profile production",
+    "submit:android": "eas submit --platform android --profile production",
+    "secrets:list": "eas secret:list",
+    "secrets:setup": "echo 'Follow the guide in scripts/setup-secrets.md'"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.2.3",
@@ -45,7 +55,8 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-svg": "15.11.2"
+    "react-native-svg": "15.11.2",
+    "expo-updates": "~0.28.15"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

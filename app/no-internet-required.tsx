@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,17 +17,50 @@ import SecurityManager from '../utils/SecurityManager';
 export default function NoInternetRequiredScreen() {
   const [isChecking, setIsChecking] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState<Date | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>('');
+  const [autoCheckResult, setAutoCheckResult] = useState<boolean | null>(null);
+  const [userTriggeredCheck, setUserTriggeredCheck] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    // Visual debugging for release builds
+    const checkForAutoNavigation = async () => {
+      try {
+        setDebugInfo('Checking network status...');
+        const safeToProceed = await SecurityManager.isSafeToProceed();
+        setAutoCheckResult(safeToProceed);
+
+        if (safeToProceed) {
+          setDebugInfo(
+            '⚠️ WARNING: Network check says safe to proceed but will NOT auto-navigate!'
+          );
+          // CRITICAL: Never auto-navigate, only allow manual user action
+        } else {
+          setDebugInfo('✅ Correctly blocking - internet detected');
+        }
+      } catch (error) {
+        setDebugInfo('❌ Error checking network: ' + error);
+      }
+    };
+
+    // Only check, don't auto-navigate
+    checkForAutoNavigation();
+  }, []);
+
   const checkInternetStatus = async () => {
+    setUserTriggeredCheck(true);
     setIsChecking(true);
+    setDebugInfo('User manually triggered internet check...');
+
     try {
       const safeToProceed = await SecurityManager.isSafeToProceed();
       setLastCheckTime(new Date());
 
+      setDebugInfo(`Manual check result - safeToProceed: ${safeToProceed}`);
+
       if (safeToProceed) {
         // No internet detected, proceed to the app
-        console.log('✅ No internet detected, proceeding to app');
+        setDebugInfo('✅ No internet detected, proceeding to app');
         SecurityManager.exitNoInternetMode();
 
         // Check app state to navigate to the correct screen
@@ -38,6 +71,7 @@ export default function NoInternetRequiredScreen() {
           'hasSetupPassword'
         );
 
+        // Navigate to the appropriate screen based on app state
         if (!hasCompletedOnboarding) {
           router.replace('/onboarding');
         } else if (!hasSetupPassword) {
@@ -47,15 +81,15 @@ export default function NoInternetRequiredScreen() {
         }
       } else {
         // Still has internet
-        console.log('⚠️ Internet still detected');
+        setDebugInfo('⚠️ Internet still detected - staying on blocker screen');
         Alert.alert(
           'Internet Still Active',
-          'Please disable your internet connection (WiFi and cellular data) to continue using SecureVault.',
+          'Please disable your internet connection (WiFi and cellular data) to continue using GetSecureVault.',
           [{ text: 'OK' }]
         );
       }
     } catch (error) {
-      console.error('Error checking internet status:', error);
+      setDebugInfo('❌ Error checking internet status: ' + error);
       Alert.alert(
         'Check Failed',
         'Unable to verify internet status. Please try again.',
@@ -80,6 +114,49 @@ export default function NoInternetRequiredScreen() {
       'To disable internet connection:\n\n📱 iOS:\n• Settings → WiFi → Turn OFF\n• Settings → Cellular → Turn OFF\n\n🤖 Android:\n• Settings → WiFi → Turn OFF\n• Settings → Mobile Data → Turn OFF\n\nAlternatively:\n• Enable Airplane Mode\n• Then disable WiFi if it auto-enables\n\nOnce disabled, return here and tap "Check Connection".',
       [{ text: 'Got it' }]
     );
+  };
+
+  const showDebugInfo = async () => {
+    try {
+      const hasCompletedOnboarding = await SecureStore.getItemAsync(
+        'hasCompletedOnboarding'
+      );
+      const hasSetupPassword = await SecureStore.getItemAsync(
+        'hasSetupPassword'
+      );
+
+      Alert.alert(
+        'Debug: App State',
+        `Current app state:\n\n• Onboarding completed: ${
+          hasCompletedOnboarding || 'false'
+        }\n• Password setup: ${
+          hasSetupPassword || 'false'
+        }\n\nExpected navigation:\n${
+          !hasCompletedOnboarding
+            ? '→ Onboarding'
+            : !hasSetupPassword
+            ? '→ Setup Password'
+            : '→ Authentication'
+        }`,
+        [
+          { text: 'OK' },
+          {
+            text: 'Reset App State',
+            style: 'destructive',
+            onPress: async () => {
+              await SecureStore.deleteItemAsync('hasCompletedOnboarding');
+              await SecureStore.deleteItemAsync('hasSetupPassword');
+              Alert.alert(
+                'Reset Complete',
+                'App state has been reset. The app will restart from onboarding.'
+              );
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Debug Error', 'Failed to read app state: ' + error);
+    }
   };
 
   return (
@@ -168,7 +245,31 @@ export default function NoInternetRequiredScreen() {
           >
             <Text style={styles.secondaryButtonText}>Why Offline Mode?</Text>
           </TouchableOpacity>
+
+          {__DEV__ && (
+            <TouchableOpacity
+              style={[styles.secondaryButton, { backgroundColor: '#E67E22' }]}
+              onPress={showDebugInfo}
+            >
+              <Text style={[styles.secondaryButtonText, { color: '#FFFFFF' }]}>
+                Debug App State
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        {/* Debug Info */}
+        {debugInfo && (
+          <View style={styles.debugInfo}>
+            <Text style={styles.debugText}>{debugInfo}</Text>
+            {autoCheckResult !== null && (
+              <Text style={styles.debugText}>
+                Network check result:{' '}
+                {autoCheckResult ? 'SAFE TO PROCEED' : 'BLOCKED'}
+              </Text>
+            )}
+          </View>
+        )}
 
         {/* Last Check Info */}
         {lastCheckTime && (
@@ -327,5 +428,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Inter-Regular',
     color: '#757575',
+  },
+  debugInfo: {
+    backgroundColor: '#FFF3CD',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 16,
+    borderWidth: 1,
+    borderColor: '#F39C12',
+  },
+  debugText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#8B4513',
+    textAlign: 'center',
+    marginBottom: 4,
   },
 });

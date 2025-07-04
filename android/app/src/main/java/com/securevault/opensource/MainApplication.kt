@@ -1,4 +1,4 @@
-package com.securevault.app
+package com.securevault.opensource
 
 import android.app.Application
 import android.content.res.Configuration

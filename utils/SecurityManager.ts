@@ -81,12 +81,27 @@ export class SecurityManager {
   static async checkNetworkConnection(): Promise<boolean> {
     try {
       const netInfo: NetInfoState = await NetInfo.fetch();
-      return (
-        netInfo.isConnected === true && netInfo.isInternetReachable === true
-      );
+
+      // More robust checking - if any value is null/undefined, treat as no internet
+      const isConnected = netInfo.isConnected === true;
+      const isInternetReachable = netInfo.isInternetReachable === true;
+      const hasInternet = isConnected && isInternetReachable;
+
+      console.log('🔍 Network check details:');
+      console.log('  - isConnected:', netInfo.isConnected);
+      console.log('  - isInternetReachable:', netInfo.isInternetReachable);
+      console.log('  - type:', netInfo.type);
+      console.log('  - hasInternet (final result):', hasInternet);
+
+      return hasInternet;
     } catch (error) {
-      // If we can't check, assume there's internet for safety
-      return true;
+      console.error('🔍 Network check failed (likely WiFi off):', error);
+      // If network check fails (e.g., WiFi off), assume NO internet (safe to proceed)
+      // This is the correct behavior for an offline-first app
+      console.log(
+        '🔍 Network check error - assuming offline mode (no internet)'
+      );
+      return false;
     }
   }
 
@@ -110,12 +125,59 @@ export class SecurityManager {
   static exitNoInternetMode(): void {
     console.log('🌐 Exiting no-internet mode');
     this.isInNoInternetMode = false;
+
+    // Now that we're offline, start network monitoring to detect if internet comes back
+    if (!this.isNetworkMonitoringActive && !__DEV__) {
+      console.log(
+        '🔍 Starting network monitoring after exiting no-internet mode'
+      );
+      this.startNetworkMonitoring();
+    }
+  }
+
+  // 2d. Set no-internet mode state
+  static setInNoInternetMode(enabled: boolean): void {
+    this.isInNoInternetMode = enabled;
+    if (enabled) {
+      console.log('🌐 Entering no-internet mode');
+    } else {
+      console.log('🌐 Exiting no-internet mode');
+    }
+  }
+
+  // Initialize security without internet check (for when we already checked)
+  static async initializeSecurityWithoutInternetCheck(): Promise<boolean> {
+    try {
+      // Enable screen protection
+      await this.enableScreenProtection();
+
+      // Start network monitoring
+      this.startNetworkMonitoring();
+
+      // Setup session management
+      this.setupSessionManagement();
+
+      // Setup app state monitoring
+      this.setupAppStateMonitoring();
+
+      return true;
+    } catch (error) {
+      console.error('Security initialization failed:', error);
+      return false;
+    }
   }
 
   // 3. Start continuous network monitoring
   static startNetworkMonitoring(): NetworkUnsubscribe {
-    if (this.isNetworkMonitoringActive || __DEV__) return;
+    // Don't start monitoring if already active, in dev mode, or in no-internet mode
+    if (this.isNetworkMonitoringActive || __DEV__ || this.isInNoInternetMode) {
+      console.log(
+        '🔍 Skipping network monitoring - already active, dev mode, or in no-internet mode'
+      );
+      return;
+    }
 
+    console.log('🔍 Starting network monitoring...');
     this.isNetworkMonitoringActive = true;
 
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {

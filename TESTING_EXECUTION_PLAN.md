@@ -80,7 +80,7 @@ maestro --version
 
 ```yaml
 # tests/ui/01-initial-screen.yaml
-appId: com.securevault.app
+appId: com.securevault.opensource
 ---
 - assertVisible: 'SecureVault'
 - assertVisible: 'Get Started'
@@ -92,7 +92,7 @@ appId: com.securevault.app
 
 ```yaml
 # tests/ui/02-onboarding.yaml
-appId: com.securevault.app
+appId: com.securevault.opensource
 ---
 - tapOn: 'Get Started'
 - assertVisible: 'Create Master Password'
@@ -108,7 +108,7 @@ appId: com.securevault.app
 
 ```yaml
 # tests/ui/03-auth-password-only.yaml
-appId: com.securevault.app
+appId: com.securevault.opensource
 ---
 - assertVisible: "Enter Master Password"
 - inputText: "SecurePassword123!"
@@ -116,7 +116,7 @@ appId: com.securevault.app
 - assertVisible: "Your Vault"
 
 # tests/ui/04-auth-password-2fa.yaml
-appId: com.securevault.app
+appId: com.securevault.opensource
 ---
 - assertVisible: "Enter Master Password"
 - inputText: "SecurePassword123!"
@@ -131,7 +131,7 @@ appId: com.securevault.app
 
 ```yaml
 # tests/ui/05-session-timeout.yaml
-appId: com.securevault.app
+appId: com.securevault.opensource
 ---
 - runFlow: '03-auth-password-only.yaml'
 - assertVisible: 'Your Vault'

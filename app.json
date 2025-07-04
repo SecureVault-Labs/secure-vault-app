@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "SecureVault",
+    "name": "GetSecureVault",
     "slug": "secure-vault",
-    "version": "1.0.0",
-    "orientation": "portrait",
+    "version": "1.0.10",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "securevault",
     "userInterfaceStyle": "automatic",
@@ -15,18 +15,34 @@
       "backgroundColor": "#0B1F3A"
     },
     "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.securevault.app",
-      "buildNumber": "1",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.securevault.opensource",
+      "buildNumber": "10",
       "infoPlist": {
         "CFBundleLocalizations": ["en"],
-        "NSCameraUsageDescription": "SecureVault needs camera access to scan QR codes for 2FA setup.",
-        "NSFaceIDUsageDescription": "SecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault."
+        "NSCameraUsageDescription": "GetSecureVault needs camera access to scan QR codes for 2FA setup.",
+        "NSFaceIDUsageDescription": "GetSecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSSupportsLiveActivities": false,
+        "UIBackgroundModes": [],
+        "CFBundleDisplayName": "GetSecureVault",
+        "CFBundleShortVersionString": "1.0.1"
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+          }
+        ],
+        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyTracking": false
       }
     },
     "android": {
-      "versionCode": 1,
-      "package": "com.securevault.app",
+      "versionCode": 10,
+      "package": "com.securevault.opensource",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon/foreground.png",
         "backgroundImage": "./assets/images/adaptive-icon/background.png"
@@ -45,7 +61,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "SecureVault needs camera access to scan QR codes for 2FA setup."
+          "cameraPermission": "GetSecureVault needs camera access to scan QR codes for 2FA setup."
         }
       ]
     ],
@@ -55,7 +71,14 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "4f4101aa-36bb-4c2a-9d58-a10771efa243"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/4f4101aa-36bb-4c2a-9d58-a10771efa243"
     }
   }
 }
