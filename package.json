@@ -3,6 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "private": true,
+  "author": "GetSecureVault Team",
+  "license": "GPL-3.0",
+  "homepage": "https://getsecurevault.com",
   "scripts": {
     "dev": "EXPO_NO_TELEMETRY=1 npx expo start",
     "lint": "expo lint",

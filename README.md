@@ -630,9 +630,9 @@ We'll respond within 24 hours and work with you to address the issue responsibly
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GPL v3 License - see the [LICENSE](LICENSE) file for details.
 
-**MIT License ensures:**
+**GPL v3 License ensures:**
 
 - ✅ Free to use, modify, and distribute
 - ✅ Commercial use allowed
