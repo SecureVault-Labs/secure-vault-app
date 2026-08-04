@@ -11,6 +11,12 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import * as ScreenCapture from 'expo-screen-capture';
 import { Platform } from 'react-native';
+import { initSentry } from '@/utils/sentry';
+
+// Crash reporting, at module scope so it is running before the router mounts
+// and can capture a failure during the very first render. See utils/sentry.ts
+// for why breadcrumbs and screenshots are disabled in this app specifically.
+initSentry();
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();

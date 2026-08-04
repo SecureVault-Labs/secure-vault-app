@@ -8,7 +8,10 @@
     "scheme": "securevault",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -19,7 +22,9 @@
       "bundleIdentifier": "com.securevault.opensource",
       "buildNumber": "10",
       "infoPlist": {
-        "CFBundleLocalizations": ["en"],
+        "CFBundleLocalizations": [
+          "en"
+        ],
         "NSCameraUsageDescription": "GetSecureVault needs camera access to scan QR codes for 2FA setup.",
         "NSFaceIDUsageDescription": "GetSecureVault uses Face ID for secure biometric authentication to protect your cryptocurrency vault.",
         "ITSAppUsesNonExemptEncryption": false,
@@ -32,7 +37,9 @@
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
           }
         ],
         "NSPrivacyCollectedDataTypes": [],
@@ -47,7 +54,11 @@
         "foregroundImage": "./assets/images/adaptive-icon/foreground.png",
         "backgroundImage": "./assets/images/adaptive-icon/background.png"
       },
-      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT", "CAMERA"],
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "CAMERA"
+      ],
       "allowBackup": false,
       "networkSecurityConfig": {
         "cleartextTrafficPermitted": false
@@ -62,6 +73,13 @@
         "expo-camera",
         {
           "cameraPermission": "GetSecureVault needs camera access to scan QR codes for 2FA setup."
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "viral-play",
+          "project": "getsecurevault-app"
         }
       ]
     ],
